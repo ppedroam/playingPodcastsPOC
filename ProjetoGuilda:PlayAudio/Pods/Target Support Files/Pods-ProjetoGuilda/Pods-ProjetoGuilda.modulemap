@@ -1,0 +1,6 @@
+framework module Pods_ProjetoGuilda {
+  umbrella header "Pods-ProjetoGuilda-umbrella.h"
+
+  export *
+  module * { export * }
+}

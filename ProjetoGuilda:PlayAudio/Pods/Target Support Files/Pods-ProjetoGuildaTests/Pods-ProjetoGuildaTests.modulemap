@@ -1,0 +1,6 @@
+framework module Pods_ProjetoGuildaTests {
+  umbrella header "Pods-ProjetoGuildaTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
