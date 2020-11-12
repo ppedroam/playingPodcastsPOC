@@ -34,32 +34,32 @@
                     <rect key="frame" x="0.0" y="44" width="414" height="818"/>
                     <subviews>
                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="music.note" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Khc-Jo-Nhn">
-                            <rect key="frame" x="132" y="40.5" width="150" height="149"/>
+                            <rect key="frame" x="132" y="85.5" width="150" height="149"/>
                             <constraints>
                                 <constraint firstAttribute="width" constant="150" id="25J-fz-p3m"/>
                                 <constraint firstAttribute="height" constant="150" id="zbf-DT-210"/>
                             </constraints>
                         </imageView>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RbT-ZO-V7u">
-                            <rect key="frame" x="40" y="230" width="334" height="29"/>
+                            <rect key="frame" x="40" y="275" width="334" height="29"/>
                             <fontDescription key="fontDescription" type="system" pointSize="24"/>
                             <nil key="textColor"/>
                             <nil key="highlightedColor"/>
                         </label>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KQ9-9I-GYL">
-                            <rect key="frame" x="40" y="269" width="334" height="20.5"/>
+                            <rect key="frame" x="40" y="314" width="334" height="20.5"/>
                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                             <nil key="textColor"/>
                             <nil key="highlightedColor"/>
                         </label>
                         <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="k1T-Qc-IJl">
-                            <rect key="frame" x="38" y="329.5" width="338" height="31"/>
+                            <rect key="frame" x="38" y="374.5" width="338" height="31"/>
                             <connections>
                                 <action selector="sliderChanged:" destination="-1" eventType="valueChanged" id="S3q-Iy-qoN"/>
                             </connections>
                         </slider>
                         <stackView opaque="NO" contentMode="scaleAspectFill" translatesAutoresizingMaskIntoConstraints="NO" id="Eex-4M-19W">
-                            <rect key="frame" x="40" y="399.5" width="334" height="45"/>
+                            <rect key="frame" x="40" y="444.5" width="334" height="45"/>
                             <subviews>
                                 <button opaque="NO" contentMode="scaleAspectFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ebu-jh-BvV">
                                     <rect key="frame" x="0.0" y="0.0" width="111.5" height="45"/>
@@ -95,6 +95,7 @@
                                 <constraint firstAttribute="width" constant="45" id="GGj-Ij-rks"/>
                                 <constraint firstAttribute="height" constant="45" id="fsH-2b-u7g"/>
                             </constraints>
+                            <color key="tintColor" systemColor="systemRedColor"/>
                             <state key="normal" image="xmark" catalog="system"/>
                             <connections>
                                 <action selector="buttonClosePressed:" destination="-1" eventType="touchUpInside" id="POP-qb-ejG"/>
@@ -111,17 +112,27 @@
                                 <action selector="buttonMinimizePressed:" destination="-1" eventType="touchUpInside" id="fjo-jT-YIc"/>
                             </connections>
                         </button>
+                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="chevron.compact.down" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="hVC-GQ-Itw">
+                            <rect key="frame" x="192" y="34" width="30" height="16.5"/>
+                            <color key="tintColor" systemColor="opaqueSeparatorColor"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="30" id="OEy-6Y-hOQ"/>
+                                <constraint firstAttribute="height" constant="30" id="fI9-PG-z1d"/>
+                            </constraints>
+                        </imageView>
                     </subviews>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
                         <constraint firstItem="KQ9-9I-GYL" firstAttribute="trailing" secondItem="RbT-ZO-V7u" secondAttribute="trailing" id="5AS-Ga-sg0"/>
+                        <constraint firstItem="Khc-Jo-Nhn" firstAttribute="top" secondItem="kwp-nh-DOG" secondAttribute="bottom" constant="20" id="CaJ-eu-FxH"/>
                         <constraint firstItem="Eex-4M-19W" firstAttribute="trailing" secondItem="k1T-Qc-IJl" secondAttribute="trailing" id="DKo-qJ-FrL"/>
                         <constraint firstItem="RbT-ZO-V7u" firstAttribute="leading" secondItem="goH-Qm-vqd" secondAttribute="leading" constant="40" id="DLk-r9-xRu"/>
                         <constraint firstAttribute="trailing" secondItem="5MJ-5O-6qp" secondAttribute="trailing" constant="20" symbolic="YES" id="DiL-uH-3z1"/>
                         <constraint firstItem="Eex-4M-19W" firstAttribute="leading" secondItem="k1T-Qc-IJl" secondAttribute="leading" id="NH5-4h-1cI"/>
                         <constraint firstItem="k1T-Qc-IJl" firstAttribute="top" secondItem="KQ9-9I-GYL" secondAttribute="bottom" constant="40" id="OhH-lE-8cf"/>
-                        <constraint firstItem="Khc-Jo-Nhn" firstAttribute="top" secondItem="goH-Qm-vqd" secondAttribute="top" constant="40" id="Q4d-Ba-qYa"/>
+                        <constraint firstItem="hVC-GQ-Itw" firstAttribute="centerY" secondItem="kwp-nh-DOG" secondAttribute="centerY" id="P7r-1o-fwN"/>
                         <constraint firstAttribute="trailing" secondItem="RbT-ZO-V7u" secondAttribute="trailing" constant="40" id="QwR-bD-7AO"/>
+                        <constraint firstItem="hVC-GQ-Itw" firstAttribute="centerX" secondItem="goH-Qm-vqd" secondAttribute="centerX" id="T7L-hR-Ui9"/>
                         <constraint firstItem="k1T-Qc-IJl" firstAttribute="trailing" secondItem="KQ9-9I-GYL" secondAttribute="trailing" id="UF7-ps-NAp"/>
                         <constraint firstItem="KQ9-9I-GYL" firstAttribute="top" secondItem="RbT-ZO-V7u" secondAttribute="bottom" constant="10" id="j0C-mS-qff"/>
                         <constraint firstItem="Khc-Jo-Nhn" firstAttribute="centerX" secondItem="goH-Qm-vqd" secondAttribute="centerX" id="jog-WG-d3N"/>
@@ -204,13 +215,20 @@
     </objects>
     <resources>
         <image name="backward.frame.fill" catalog="system" width="128" height="93"/>
+        <image name="chevron.compact.down" catalog="system" width="128" height="43"/>
         <image name="chevron.down" catalog="system" width="128" height="72"/>
         <image name="forward.frame.fill" catalog="system" width="128" height="93"/>
         <image name="music.note" catalog="system" width="97" height="128"/>
         <image name="play.fill" catalog="system" width="116" height="128"/>
         <image name="xmark" catalog="system" width="128" height="113"/>
+        <systemColor name="opaqueSeparatorColor">
+            <color red="0.77647058823529413" green="0.77647058823529413" blue="0.78431372549019607" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemRedColor">
+            <color red="1" green="0.23137254901960785" blue="0.18823529411764706" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

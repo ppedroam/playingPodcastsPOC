@@ -32,9 +32,17 @@ class PlayingTrackViewController: UIViewController {
     // MARK: - Properties
     
     let viewModel: PlayingScreenViewModelInterface
+    
+    private var isMinimized = false {
+        didSet {
+            audioView.isHidden = !isMinimized
+            fullScreenView.isHidden = isMinimized
+        }
+    }
     private var player: AVAudioPlayer?
     private var timer: Timer?
-    
+    private var viewTranslation = CGPoint(x: 0, y: 0)
+
     private var currentSong = 0
     private var totalOfSongs = 0
     private var trackDuration: Float = 0 {
@@ -68,17 +76,9 @@ class PlayingTrackViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.slider.value = 0
-        self.playTrack()
-        self.audioView.isHidden = true
-        self.audioView.layer.borderWidth = 1.0
-        self.audioView.layer.borderColor = UIColor.blue.cgColor
-        self.buttonClose.layer.cornerRadius = self.buttonClose.frame.width/2
-        self.buttonClose.layer.borderColor = UIColor.blue.cgColor
-        self.buttonClose.layer.borderWidth = 1
-        self.buttonMinimize.layer.cornerRadius = self.buttonClose.frame.width/2
-        self.buttonMinimize.layer.borderColor = UIColor.blue.cgColor
-        self.buttonMinimize.layer.borderWidth = 1
+        playTrack()
+        configureUI()
+        view.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(handleDismiss)))
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -90,9 +90,22 @@ class PlayingTrackViewController: UIViewController {
     
     // MARK: - Class methods
     
+    private func configureUI() {
+        self.slider.value = 0
+        self.audioView.isHidden = true
+        self.audioView.layer.borderWidth = 1.0
+        self.audioView.layer.borderColor = UIColor.blue.cgColor
+        self.buttonClose.layer.cornerRadius = self.buttonClose.frame.width/2
+        self.buttonClose.layer.borderColor = UIColor.red.cgColor
+        self.buttonClose.layer.borderWidth = 1
+        self.buttonMinimize.layer.cornerRadius = self.buttonClose.frame.width/2
+        self.buttonMinimize.layer.borderColor = UIColor.blue.cgColor
+        self.buttonMinimize.layer.borderWidth = 1
+    }
+    
     private func playTrack() {
         timer?.invalidate()
-        if player?.isPlaying ?? false {
+        if player != nil {
             guard let trackURL = viewModel.track(for: currentSong) else {
                 return
             }
@@ -100,25 +113,27 @@ class PlayingTrackViewController: UIViewController {
             if let duration = player?.duration {
                 trackDuration = Float(duration)
             }
+            player?.prepareToPlay()
             player?.play()
         } else {
             do {
                 try AVAudioSession.sharedInstance().setMode(.default)
                 try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
+
                 guard let trackURL = viewModel.track(for: currentSong) else {
                     return
                 }
                 player = try AVAudioPlayer(contentsOf: trackURL)
-                player?.delegate = self
                 if let duration = player?.duration {
                     trackDuration = Float(duration)
                 }
+                player?.prepareToPlay()
                 player?.play()
             } catch {
                 print("error")
             }
         }
-        timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(updateSlider), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 0.01, target: self, selector: #selector(updateSlider), userInfo: nil, repeats: true)
         changePlayPauseIcon()
         
         labelTitle.text = "Impacto do conhecimento do produto no atendimento do pós-vendas"
@@ -139,10 +154,66 @@ class PlayingTrackViewController: UIViewController {
         }
     }
     
+    private func nextTrack() {
+        if currentSong < totalOfSongs-1 {
+            currentSong += 1
+            playTrack()
+        } else {
+            player?.stop()
+            changePlayPauseIcon()
+        }
+    }
+    
     @objc
     private func updateSlider() {
         guard let currentTime = player?.currentTime else { return }
         slider.value = Float(currentTime)
+        if slider.value > 0.99*slider.maximumValue {
+            nextTrack()
+        }
+    }
+    
+    @objc
+    private func handleDismiss(sender: UIPanGestureRecognizer) {
+        guard !isMinimized else { return }
+        viewTranslation = sender.translation(in: view)
+        
+        switch sender.state {
+        case .changed:
+            UIView.animate(withDuration: 0.5,
+                           delay: 0,
+                           usingSpringWithDamping: 0.7,
+                           initialSpringVelocity: 1,
+                           options: .curveEaseOut,
+                           animations: {
+                self.view.transform = CGAffineTransform(translationX: 0, y: self.viewTranslation.y)
+            })
+        case .ended:
+            if viewTranslation.y < 200 {
+                UIView.animate(withDuration: 0.5,
+                               delay: 0,
+                               usingSpringWithDamping: 0.7,
+                               initialSpringVelocity: 1,
+                               options: .curveEaseOut,
+                               animations: {
+                    self.view.transform = .identity
+                })
+            } else {
+                UIView.animate(withDuration: 0.5,
+                               delay: 0,
+                               usingSpringWithDamping: 0.7,
+                               initialSpringVelocity: 1,
+                               options: .curveEaseOut,
+                               animations: {
+                    self.view.transform = .identity
+                    self.viewModel.minimize()
+                    self.isMinimized = true
+                })
+                
+            }
+        default:
+            break
+        }
     }
     
     // MARK: - Actions functions
@@ -167,10 +238,7 @@ class PlayingTrackViewController: UIViewController {
     
     @IBAction
     private func nextPressed(_ sender: UIButton) {
-        if currentSong < totalOfSongs-1 {
-            currentSong += 1
-        }
-        playTrack()
+        nextTrack()
     }
     
     @IBAction
@@ -189,16 +257,14 @@ class PlayingTrackViewController: UIViewController {
     
     @IBAction
     private func buttonMinimizePressed(_ sender: UIButton) {
-        audioView.isHidden = false
-        fullScreenView.isHidden = true
+        isMinimized = true
         viewModel.minimize()
     }
     
     @IBAction
     private func buttonMaximizePressed(_ sender: UIButton) {
+        isMinimized = false
         viewModel.maximize()
-        audioView.isHidden = true
-        fullScreenView.isHidden = false
     }
     
     // MARK: - Public methods
@@ -208,10 +274,4 @@ class PlayingTrackViewController: UIViewController {
         playTrack()
     }
     
-}
-
-extension PlayingTrackViewController: AVAudioPlayerDelegate {
-    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        nextPressed(UIButton())
-    }
 }

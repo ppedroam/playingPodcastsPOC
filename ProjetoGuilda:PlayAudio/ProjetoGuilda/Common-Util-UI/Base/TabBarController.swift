@@ -37,12 +37,12 @@ class TabBarController: UITabBarController {
                                                         data: AnyObject.self)
         let controllers: [UIViewController] = [
             homeController ?? UIViewController(),
-            SecondViewController()
+            NavigationController(rootViewController: SecondViewController())
         ]
         
         self.viewControllers = controllers.map {
             if let navigationController = $0.navigationController {
-                navigationController.viewControllers = [$0]
+//                navigationController.viewControllers = [$0]
                 return navigationController
             }
             return $0
@@ -58,12 +58,12 @@ class TabBarController: UITabBarController {
                 vc.tabBarItem.imageInsets = UIEdgeInsets.init(top: 5,left: 0,bottom: -5,right: 0)
             }
             
-            if vc.isKind(of: SecondViewController.self) {
+            if let nav = vc as? NavigationController, let secondVC = nav.viewControllers.first as? SecondViewController {
                 let imageSelected = UIImage(named: "music-fill")?.icon(size: 30)
                 let image = UIImage(named: "music")?.icon(size: 30)
                 let item = UITabBarItem(title: nil, image: image, selectedImage: imageSelected)
-                vc.tabBarItem = item
-                vc.tabBarItem.imageInsets = UIEdgeInsets.init(top: 5,left: 0,bottom: -5,right: 0)
+                secondVC.tabBarItem = item
+                secondVC.tabBarItem.imageInsets = UIEdgeInsets.init(top: 5,left: 0,bottom: -5,right: 0)
             }
         })
     }
@@ -100,32 +100,6 @@ class TabBarController: UITabBarController {
             self.audioViewController?.view.removeFromSuperview()
             self.audioViewController = nil
         })
-    }
-    
-    func minimizeAudioController() {
-        let viewFrame = view.frame
-        let maxY = tabBar.frame.minY
-        let height: CGFloat = 74
-        UIView.animate(withDuration: 0.4) {
-            self.audioViewController?.view.frame = CGRect(x: viewFrame.minX,
-                                                     y: maxY-height,
-                                                     width: viewFrame.width,
-                                                     height: height)
-            self.view.layoutIfNeeded()
-        }
-    }
-    
-    func maximize() {
-        let screenFrame = view.bounds
-        let statusBarFrame = view.window?.windowScene?.statusBarManager?.statusBarFrame ?? CGRect()
-        let height = screenFrame.height - statusBarFrame.height
-        UIView.animate(withDuration: 0.4) {
-            self.audioViewController?.view.frame = CGRect(x: screenFrame.minX,
-                                                     y: screenFrame.minY + statusBarFrame.maxY,
-                                                     width: screenFrame.width,
-                                                     height: height)
-            self.view.layoutIfNeeded()
-        }
     }
 }
 

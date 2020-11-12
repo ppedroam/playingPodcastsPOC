@@ -42,14 +42,31 @@ class PlayingScreenCoordinator: PlayingScreenCoordinatorDelegate {
     }
     
     func minimize() {
-        if let tabBarController = tabBarController as? TabBarController {
-            tabBarController.minimizeAudioController()
+        let viewFrame = tabBarController.view.frame
+        let maxY = tabBarController.tabBar.frame.minY
+        let height: CGFloat = 74
+        UIView.animate(withDuration: 0.4) {
+            self.viewController?.view.frame = CGRect(x: viewFrame.minX,
+                                                          y: maxY-height,
+                                                          width: viewFrame.width,
+                                                          height: height)
+            self.tabBarController.view.layoutIfNeeded()
         }
     }
     
     func maximize() {
-        if let tabBarController = tabBarController as? TabBarController {
-            tabBarController.maximize()
+        let screenFrame = tabBarController.view.bounds
+        let statusBarFrame = tabBarController.view.window?.windowScene?.statusBarManager?.statusBarFrame ?? CGRect()
+        let height = screenFrame.height - statusBarFrame.height
+        UIView.animate(withDuration: 0.4) {
+            self.viewController?.view.frame = CGRect(x: screenFrame.minX,
+                                                     y: screenFrame.minY + statusBarFrame.maxY,
+                                                     width: screenFrame.width,
+                                                     height: height)
+            self.tabBarController.view.layoutIfNeeded()
         }
+//        completion: { (_) in
+////            self.viewController?.view.transform = .identity
+//        }
     }
 }
