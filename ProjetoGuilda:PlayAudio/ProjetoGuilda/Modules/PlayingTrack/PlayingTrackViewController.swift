@@ -8,7 +8,8 @@
 import UIKit
 import AVKit
 
-protocol PlayingTrackViewControllerInterface: class {
+protocol PlayingTrackViewControllerInterface: NSObject {
+    func updatePlayingTrack(to track: Int)
 }
 
 class PlayingTrackViewController: UIViewController {
@@ -30,15 +31,9 @@ class PlayingTrackViewController: UIViewController {
     @IBOutlet weak var minimizeButtonPlay: UIButton!
     
     // MARK: - Properties
+        
+    private let viewModel: PlayingScreenViewModelInterface
     
-    let viewModel: PlayingScreenViewModelInterface
-    
-    private var isMinimized = false {
-        didSet {
-            audioView.isHidden = !isMinimized
-            fullScreenView.isHidden = isMinimized
-        }
-    }
     private var player: AVAudioPlayer?
     private var timer: Timer?
     private var viewTranslation = CGPoint(x: 0, y: 0)
@@ -67,25 +62,20 @@ class PlayingTrackViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    deinit {
-        print("VIEWCONTROLLER DEINIT")
-        print("VIEWCONTROLLER DEINIT")
-    }
-    
     // MARK: - Lyfe cicle
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        playTrack()
+        setupToPlayTrack()
         configureUI()
         view.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(handleDismiss)))
+        viewModel.delegate = self
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         self.player = nil
         self.timer = nil
-        print("VIEWCONTROLLER DISAPPEAR")
     }
     
     // MARK: - Class methods
@@ -103,146 +93,210 @@ class PlayingTrackViewController: UIViewController {
         self.buttonMinimize.layer.borderWidth = 1
     }
     
-    private func playTrack() {
+    private func setupToPlayTrack() {
         timer?.invalidate()
-        if player != nil {
-            guard let trackURL = viewModel.track(for: currentSong) else {
-                return
-            }
-            player = try? AVAudioPlayer(contentsOf: trackURL)
-            if let duration = player?.duration {
-                trackDuration = Float(duration)
-            }
-            player?.prepareToPlay()
-            player?.play()
-        } else {
-            do {
-                try AVAudioSession.sharedInstance().setMode(.default)
-                try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
-
-                guard let trackURL = viewModel.track(for: currentSong) else {
-                    return
-                }
-                player = try AVAudioPlayer(contentsOf: trackURL)
-                if let duration = player?.duration {
-                    trackDuration = Float(duration)
-                }
-                player?.prepareToPlay()
-                player?.play()
-            } catch {
-                print("error")
-            }
-        }
-        timer = Timer.scheduledTimer(timeInterval: 0.01, target: self, selector: #selector(updateSlider), userInfo: nil, repeats: true)
-        changePlayPauseIcon()
         
-        labelTitle.text = "Impacto do conhecimento do produto no atendimento do pós-vendas"
+        if player != nil {
+            preparePlayerAndPlay()
+        } else {
+            initializePlayer()
+            preparePlayerAndPlay()
+        }
+        configSliderTimer()
+        configAudioStateIcon()
+        configUIElementsToPlayingState()
+    }
+    
+    private func initializePlayer() {
+        do {
+            try AVAudioSession.sharedInstance().setMode(.default)
+            try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
+        } catch {
+            showAudioErrorAlert()
+        }
+    }
+    
+    private func preparePlayerAndPlay() {
+        guard let trackURL = viewModel.track(for: currentSong) else {
+            return
+        }
+        do {
+            player = try AVAudioPlayer(contentsOf: trackURL)
+            refreshAudioTrackDuration()
+            playAudio()
+        } catch {
+            showAudioErrorAlert()
+        }
+    }
+    
+    private func refreshAudioTrackDuration() {
+        if let duration = player?.duration {
+            trackDuration = Float(duration)
+        }
+    }
+    private func playAudio() {
+        player?.prepareToPlay()
+        player?.play()
+    }
+    
+    private func showAudioErrorAlert() {
+        let alertAction = UIAlertAction(title: "Erro de áudio", style: .default, handler: nil)
+        let alert = UIAlertController(title: "Erro de áudio", message: "Não foi possível executar o aúdio. Tente novamente.", preferredStyle: .alert)
+        alert.addAction(alertAction)
+        present(alert, animated: true, completion: nil)
+    }
+    
+    private func configSliderTimer() {
+        timer = Timer.scheduledTimer(timeInterval: 0.01, target: self, selector: #selector(updateSlider), userInfo: nil, repeats: true)
+    }
+    
+    private func configAudioStateIcon() {
+        let isPlayingAudio = player?.isPlaying ?? false
+        if isPlayingAudio {
+            setPauseIcon()
+        } else {
+            setPlayIcon()
+        }
+    }
+    
+    private func configUIElementsToPlayingState() {
+        labelTitle.text = "Titulo avulso da faixa de audio"
         labelSubtitle.text = "Faixa \(currentSong+1)/\(totalOfSongs)"
         minimizeLabelTitle.text = "Ouvindo faixa \(currentSong+1)/\(totalOfSongs)"
         minimizeLabelSubtitle.text = "Faixa \(currentSong+1)/\(totalOfSongs)"
     }
     
-    private func changePlayPauseIcon() {
-        if player?.isPlaying ?? false {
-            let image = UIImage.init(systemName: "pause.fill")
-            buttonPlay.setImage(image, for: .normal)
-            minimizeButtonPlay.setImage(image, for: .normal)
-        } else {
-            let image = UIImage.init(systemName: "play.fill")
-            buttonPlay.setImage(image, for: .normal)
-            minimizeButtonPlay.setImage(image, for: .normal)
-        }
+    private func setPauseIcon() {
+        let image = UIImage.init(systemName: "pause.fill")
+        buttonPlay.setImage(image, for: .normal)
+        minimizeButtonPlay.setImage(image, for: .normal)
+    }
+    
+    private func setPlayIcon() {
+        let image = UIImage.init(systemName: "play.fill")
+        buttonPlay.setImage(image, for: .normal)
+        minimizeButtonPlay.setImage(image, for: .normal)
     }
     
     private func nextTrack() {
-        if currentSong < totalOfSongs-1 {
-            currentSong += 1
-            playTrack()
+        let isLastTrack = currentSong >= totalOfSongs-1
+        if isLastTrack {
+            configStopPlaying()
         } else {
-            player?.stop()
-            changePlayPauseIcon()
+            currentSong += 1
+            setupToPlayTrack()
         }
+    }
+    
+    private func configStopPlaying() {
+        player?.stop()
+        configAudioStateIcon()
     }
     
     @objc
     private func updateSlider() {
         guard let currentTime = player?.currentTime else { return }
         slider.value = Float(currentTime)
-        if slider.value > 0.99*slider.maximumValue {
+        verifyIfWillPlayNextTrack()
+    }
+    
+    private func verifyIfWillPlayNextTrack() {
+        let minimumAudioPercentToChangeTrack: Float = 0.99
+        let valueToChangeTrack = minimumAudioPercentToChangeTrack * slider.maximumValue
+        if slider.value > valueToChangeTrack {
             nextTrack()
         }
     }
     
+}
+
+private extension PlayingTrackViewController {
+    //MARK: Screen Dismiss Methods
+    
     @objc
-    private func handleDismiss(sender: UIPanGestureRecognizer) {
-        guard !isMinimized else { return }
+    func handleDismiss(sender: UIPanGestureRecognizer) {
+        guard !viewModel.isScreenMinimized else { return }
         viewTranslation = sender.translation(in: view)
         
         switch sender.state {
         case .changed:
-            UIView.animate(withDuration: 0.5,
-                           delay: 0,
-                           usingSpringWithDamping: 0.7,
-                           initialSpringVelocity: 1,
-                           options: .curveEaseOut,
-                           animations: {
-                self.view.transform = CGAffineTransform(translationX: 0, y: self.viewTranslation.y)
-            })
+            updateViewVerticalPosition()
         case .ended:
-            if viewTranslation.y < 200 {
-                UIView.animate(withDuration: 0.5,
-                               delay: 0,
-                               usingSpringWithDamping: 0.7,
-                               initialSpringVelocity: 1,
-                               options: .curveEaseOut,
-                               animations: {
-                    self.view.transform = .identity
-                })
+            let minimumTranslationToTransform: CGFloat = 200
+            if viewTranslation.y < minimumTranslationToTransform {
+                initalViewVerticalPosition()
             } else {
-                UIView.animate(withDuration: 0.5,
-                               delay: 0,
-                               usingSpringWithDamping: 0.7,
-                               initialSpringVelocity: 1,
-                               options: .curveEaseOut,
-                               animations: {
-                    self.view.transform = .identity
-                    self.viewModel.minimize()
-                    self.isMinimized = true
-                })
-                
+               minimizeView()
             }
         default:
             break
         }
     }
     
-    // MARK: - Actions functions
+    func updateViewVerticalPosition() {
+        UIView.animate(withDuration: 0.5,
+                       delay: 0,
+                       usingSpringWithDamping: 0.7,
+                       initialSpringVelocity: 1,
+                       options: .curveEaseOut,
+                       animations: {
+            self.view.transform = CGAffineTransform(translationX: 0, y: self.viewTranslation.y)
+        })
+    }
     
+    func initalViewVerticalPosition() {
+        UIView.animate(withDuration: 0.5,
+                       delay: 0,
+                       usingSpringWithDamping: 0.7,
+                       initialSpringVelocity: 1,
+                       options: .curveEaseOut,
+                       animations: {
+            self.view.transform = .identity
+        })
+    }
+    
+    func minimizeView() {
+        UIView.animate(withDuration: 0.5,
+                       delay: 0,
+                       usingSpringWithDamping: 0.7,
+                       initialSpringVelocity: 1,
+                       options: .curveEaseOut,
+                       animations: {
+                        self.view.transform = .identity
+                        self.viewModel.isScreenMinimized = true
+                       })
+    }
+}
+
+private extension PlayingTrackViewController {
+    
+    //MARK: Actions
+
     @IBAction
-    private func buttonPlayPressed(_ sender: UIButton) {
+    func buttonPlayPressed(_ sender: UIButton) {
         if player?.isPlaying ?? false {
             player?.pause()
         } else {
             player?.play()
         }
-        changePlayPauseIcon()
+        configAudioStateIcon()
     }
     
     @IBAction
-    private func previousPressed(_ sender: UIButton) {
+    func previousPressed(_ sender: UIButton) {
         if currentSong > 0 {
             currentSong -= 1
         }
-        playTrack()
+        setupToPlayTrack()
     }
     
     @IBAction
-    private func nextPressed(_ sender: UIButton) {
+    func nextPressed(_ sender: UIButton) {
         nextTrack()
     }
     
     @IBAction
-    private func sliderChanged(_ sender: UISlider) {
+    func sliderChanged(_ sender: UISlider) {
         player?.stop()
         player?.currentTime = TimeInterval(sender.value)
         player?.prepareToPlay()
@@ -250,28 +304,34 @@ class PlayingTrackViewController: UIViewController {
     }
     
     @IBAction
-    private func buttonClosePressed(_ sender: UIButton) {
+    func buttonClosePressed(_ sender: UIButton) {
         timer?.invalidate()
         viewModel.dismiss()
     }
     
     @IBAction
-    private func buttonMinimizePressed(_ sender: UIButton) {
-        isMinimized = true
-        viewModel.minimize()
+    func buttonMinimizePressed(_ sender: UIButton) {
+        viewModel.isScreenMinimized = true
     }
     
     @IBAction
-    private func buttonMaximizePressed(_ sender: UIButton) {
-        isMinimized = false
-        viewModel.maximize()
+    func buttonMaximizePressed(_ sender: UIButton) {
+        viewModel.isScreenMinimized = false
     }
-    
-    // MARK: - Public methods
-    
+}
+
+
+extension PlayingTrackViewController: PlayingTrackViewControllerInterface {
     func updatePlayingTrack(to track: Int) {
         currentSong = track
-        playTrack()
+        setupToPlayTrack()
     }
-    
+}
+
+extension PlayingTrackViewController: PlayingScreenViewModelDelegate {
+    func didChangeScreenState(isMinimized: Bool) {
+        audioView.isHidden = !isMinimized
+        fullScreenView.isHidden = isMinimized
+    }
+
 }

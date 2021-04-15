@@ -17,7 +17,6 @@
 		A44E13032548A929003D8FB5 /* ProjetoGuildaUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A44E13022548A929003D8FB5 /* ProjetoGuildaUITests.swift */; };
 		A44E13202548B2D6003D8FB5 /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A44E131F2548B2D6003D8FB5 /* TabBarController.swift */; };
 		A44E13282548B2F2003D8FB5 /* NavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A44E13272548B2F2003D8FB5 /* NavigationController.swift */; };
-		A44E132E2548B309003D8FB5 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A44E132D2548B309003D8FB5 /* ViewController.swift */; };
 		A44E133D2548B520003D8FB5 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A44E133B2548B520003D8FB5 /* HomeViewController.swift */; };
 		A44E133E2548B520003D8FB5 /* HomeViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A44E133C2548B520003D8FB5 /* HomeViewController.xib */; };
 		A44E13462548B539003D8FB5 /* SecondViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A44E13442548B539003D8FB5 /* SecondViewController.swift */; };
@@ -80,7 +79,6 @@
 		A44E13042548A929003D8FB5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A44E131F2548B2D6003D8FB5 /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 		A44E13272548B2F2003D8FB5 /* NavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationController.swift; sourceTree = "<group>"; };
-		A44E132D2548B309003D8FB5 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		A44E133B2548B520003D8FB5 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		A44E133C2548B520003D8FB5 /* HomeViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = HomeViewController.xib; sourceTree = "<group>"; };
 		A44E13442548B539003D8FB5 /* SecondViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondViewController.swift; sourceTree = "<group>"; };
@@ -261,7 +259,6 @@
 			children = (
 				A44E131F2548B2D6003D8FB5 /* TabBarController.swift */,
 				A44E13272548B2F2003D8FB5 /* NavigationController.swift */,
-				A44E132D2548B309003D8FB5 /* ViewController.swift */,
 			);
 			path = Base;
 			sourceTree = "<group>";
@@ -594,7 +591,6 @@
 				A44E13952548FD41003D8FB5 /* UITableViewCell+Extensions.swift in Sources */,
 				A44E13462548B539003D8FB5 /* SecondViewController.swift in Sources */,
 				A44E133D2548B520003D8FB5 /* HomeViewController.swift in Sources */,
-				A44E132E2548B309003D8FB5 /* ViewController.swift in Sources */,
 				A44E13202548B2D6003D8FB5 /* TabBarController.swift in Sources */,
 				A44E13282548B2F2003D8FB5 /* NavigationController.swift in Sources */,
 				A44E139C2548FD91003D8FB5 /* TrackTableViewCell.swift in Sources */,

@@ -8,15 +8,20 @@
 import Foundation
 
 protocol PlayingScreenViewModelInterface: class {
+    var delegate: PlayingScreenViewModelDelegate? { get set }
+    var isScreenMinimized: Bool { get set }
     func track(for index: Int) -> URL?
     func dismiss()
-    func minimize()
-    func maximize()
+}
+
+protocol PlayingScreenViewModelDelegate: NSObject {
+    func didChangeScreenState(isMinimized: Bool)
 }
 
 class PlayingScreenViewModel: PlayingScreenViewModelInterface {
     
     let coordinator: PlayingScreenCoordinatorDelegate
+    weak var delegate: PlayingScreenViewModelDelegate?
     private let tracks: [TrackDto]
     
     init(coordinator: PlayingScreenCoordinatorDelegate,
@@ -25,29 +30,11 @@ class PlayingScreenViewModel: PlayingScreenViewModelInterface {
         self.tracks = tracks
     }
     
-    deinit {
-        print("VIEW MODEL DEINIT")
-        print("VIEW MODEL DEINIT")
-    }
-    
-    // MARK: - Class methods
-    
-    private func convertBase64ToAudio(_ base64: String?, title: String?) -> URL? {
-        guard let base64 = base64, let title = title else { return nil }
-        let audioData_ = Data(base64Encoded: base64, options: .ignoreUnknownCharacters)
-        guard let audioData = audioData_ else { return nil }
-        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        let randomNumber = Int.random(in: 0..<555555)
-        let filename = paths[0].appendingPathComponent("\(title)\(randomNumber).mp3")
-        do {
-            try audioData.write(to: filename, options: .atomicWrite)
-            return filename
-        } catch {
-            print("error write")
+    var isScreenMinimized: Bool = false {
+        didSet {
+            didChangeScreenPresentationState()
         }
-        return nil
     }
-    // MARK: - Public methods
     
     func track(for index: Int) -> URL? {
         guard tracks.indices.contains(index) else { return nil }
@@ -61,12 +48,32 @@ class PlayingScreenViewModel: PlayingScreenViewModelInterface {
     func dismiss() {
         coordinator.dismiss()
     }
-    
-    func minimize() {
-        coordinator.minimize()
+}
+
+private extension PlayingScreenViewModel {
+    func didChangeScreenPresentationState() {
+        delegate?.didChangeScreenState(isMinimized: isScreenMinimized)
+        
+        if isScreenMinimized {
+            coordinator.minimize()
+        } else {
+            coordinator.maximize()
+        }
     }
     
-    func maximize() {
-        coordinator.maximize()
+    func convertBase64ToAudio(_ base64: String?, title: String?) -> URL? {
+        guard let base64 = base64, let title = title else { return nil }
+        let audioData_ = Data(base64Encoded: base64, options: .ignoreUnknownCharacters)
+        guard let audioData = audioData_ else { return nil }
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let randomNumber = Int.random(in: 0..<555555)
+        let filename = paths[0].appendingPathComponent("\(title)\(randomNumber).mp3")
+        do {
+            try audioData.write(to: filename, options: .atomicWrite)
+            return filename
+        } catch {
+            print("error write")
+        }
+        return nil
     }
 }
