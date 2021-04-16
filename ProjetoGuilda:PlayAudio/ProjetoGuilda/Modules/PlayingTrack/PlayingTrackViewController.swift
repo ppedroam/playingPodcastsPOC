@@ -16,6 +16,8 @@ class PlayingTrackViewController: UIViewController {
     
     // MARK: - Outlets
     
+    @IBOutlet weak var viewProgressing: UIView!
+    
     @IBOutlet weak var fullScreenView: UIView!
     @IBOutlet weak var buttonClose: UIButton!
     @IBOutlet weak var buttonMinimize: UIButton!
@@ -30,6 +32,9 @@ class PlayingTrackViewController: UIViewController {
     @IBOutlet weak var minimizeLabelSubtitle: UILabel!
     @IBOutlet weak var minimizeButtonPlay: UIButton!
     
+    @IBOutlet weak var buttonBackSeconds: UIButton!
+    @IBOutlet weak var buttonForwardSeconds: UIButton!
+    
     // MARK: - Properties
         
     private let viewModel: PlayingScreenViewModelInterface
@@ -37,7 +42,7 @@ class PlayingTrackViewController: UIViewController {
     private var player: AVAudioPlayer?
     private var timer: Timer?
     private var viewTranslation = CGPoint(x: 0, y: 0)
-
+    
     private var currentSong = 0
     private var totalOfSongs = 0
     private var trackDuration: Float = 0 {
@@ -46,6 +51,7 @@ class PlayingTrackViewController: UIViewController {
             self.slider.maximumValue = trackDuration
         }
     }
+    private var shouldBePlayingAudio = false
     
     // MARK: - Init method
     
@@ -77,10 +83,13 @@ class PlayingTrackViewController: UIViewController {
         self.player = nil
         self.timer = nil
     }
-    
+
+}
+
+private extension PlayingTrackViewController {
     // MARK: - Class methods
     
-    private func configureUI() {
+    func configureUI() {
         self.slider.value = 0
         self.audioView.isHidden = true
         self.audioView.layer.borderWidth = 1.0
@@ -93,7 +102,7 @@ class PlayingTrackViewController: UIViewController {
         self.buttonMinimize.layer.borderWidth = 1
     }
     
-    private func setupToPlayTrack() {
+    func setupToPlayTrack() {
         timer?.invalidate()
         
         if player != nil {
@@ -102,12 +111,11 @@ class PlayingTrackViewController: UIViewController {
             initializePlayer()
             preparePlayerAndPlay()
         }
-        configSliderTimer()
         configAudioStateIcon()
         configUIElementsToPlayingState()
     }
     
-    private func initializePlayer() {
+    func initializePlayer() {
         do {
             try AVAudioSession.sharedInstance().setMode(.default)
             try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
@@ -116,7 +124,7 @@ class PlayingTrackViewController: UIViewController {
         }
     }
     
-    private func preparePlayerAndPlay() {
+    func preparePlayerAndPlay() {
         guard let trackURL = viewModel.track(for: currentSong) else {
             return
         }
@@ -129,56 +137,57 @@ class PlayingTrackViewController: UIViewController {
         }
     }
     
-    private func refreshAudioTrackDuration() {
+    func refreshAudioTrackDuration() {
         if let duration = player?.duration {
             trackDuration = Float(duration)
         }
     }
-    private func playAudio() {
+    func playAudio() {
+        configSliderTimer()
         player?.prepareToPlay()
         player?.play()
+        shouldBePlayingAudio = true
     }
     
-    private func showAudioErrorAlert() {
+    func showAudioErrorAlert() {
         let alertAction = UIAlertAction(title: "Erro de áudio", style: .default, handler: nil)
         let alert = UIAlertController(title: "Erro de áudio", message: "Não foi possível executar o aúdio. Tente novamente.", preferredStyle: .alert)
         alert.addAction(alertAction)
         present(alert, animated: true, completion: nil)
     }
     
-    private func configSliderTimer() {
+    func configSliderTimer() {
         timer = Timer.scheduledTimer(timeInterval: 0.01, target: self, selector: #selector(updateSlider), userInfo: nil, repeats: true)
     }
     
-    private func configAudioStateIcon() {
-        let isPlayingAudio = player?.isPlaying ?? false
-        if isPlayingAudio {
+    func configAudioStateIcon() {
+        if player?.isPlaying ?? false {
             setPauseIcon()
         } else {
             setPlayIcon()
         }
     }
     
-    private func configUIElementsToPlayingState() {
+    func setPauseIcon() {
+        let image = UIImage.init(systemName: "pause.fill")
+        buttonPlay.setImage(image, for: .normal)
+        minimizeButtonPlay.setImage(image, for: .normal)
+    }
+    
+    func setPlayIcon() {
+        let image = UIImage.init(systemName: "play.fill")
+        buttonPlay.setImage(image, for: .normal)
+        minimizeButtonPlay.setImage(image, for: .normal)
+    }
+    
+    func configUIElementsToPlayingState() {
         labelTitle.text = "Titulo avulso da faixa de audio"
         labelSubtitle.text = "Faixa \(currentSong+1)/\(totalOfSongs)"
         minimizeLabelTitle.text = "Ouvindo faixa \(currentSong+1)/\(totalOfSongs)"
         minimizeLabelSubtitle.text = "Faixa \(currentSong+1)/\(totalOfSongs)"
     }
     
-    private func setPauseIcon() {
-        let image = UIImage.init(systemName: "pause.fill")
-        buttonPlay.setImage(image, for: .normal)
-        minimizeButtonPlay.setImage(image, for: .normal)
-    }
-    
-    private func setPlayIcon() {
-        let image = UIImage.init(systemName: "play.fill")
-        buttonPlay.setImage(image, for: .normal)
-        minimizeButtonPlay.setImage(image, for: .normal)
-    }
-    
-    private func nextTrack() {
+    func nextTrack() {
         let isLastTrack = currentSong >= totalOfSongs-1
         if isLastTrack {
             configStopPlaying()
@@ -188,24 +197,39 @@ class PlayingTrackViewController: UIViewController {
         }
     }
     
-    private func configStopPlaying() {
+    func previousTrack() {
+        if currentSong > 0 {
+            currentSong -= 1
+        }
+        setupToPlayTrack()
+    }
+    
+    func configStopPlaying() {
         player?.stop()
         configAudioStateIcon()
     }
     
-    @objc
-    private func updateSlider() {
-        guard let currentTime = player?.currentTime else { return }
-        slider.value = Float(currentTime)
-        verifyIfWillPlayNextTrack()
-    }
-    
-    private func verifyIfWillPlayNextTrack() {
+    func verifyIfWillPlayNextTrack() {
         let minimumAudioPercentToChangeTrack: Float = 0.99
         let valueToChangeTrack = minimumAudioPercentToChangeTrack * slider.maximumValue
         if slider.value > valueToChangeTrack {
             nextTrack()
         }
+    }
+    
+    func backTime() {
+        guard let currentTime = self.player?.currentTime else { return }
+        let timeLimitToBackTrack: TimeInterval = 2
+        if currentTime < timeLimitToBackTrack {
+            previousTrack()
+        } else {
+            self.player?.currentTime -= 10
+        }
+    }
+    
+    func forwardTime() {
+        player?.currentTime += 10
+        verifyIfWillPlayNextTrack()
     }
     
 }
@@ -276,18 +300,26 @@ private extension PlayingTrackViewController {
     func buttonPlayPressed(_ sender: UIButton) {
         if player?.isPlaying ?? false {
             player?.pause()
+            shouldBePlayingAudio = false
         } else {
-            player?.play()
+            playAudio()
         }
         configAudioStateIcon()
     }
     
     @IBAction
+    func buttonBackSecondsPressed(_ sender: UIButton) {
+        backTime()
+    }
+    
+    @IBAction
+    func buttonForwardSecondsPressed(_ sender: UIButton) {
+        forwardTime()
+    }
+    
+    @IBAction
     func previousPressed(_ sender: UIButton) {
-        if currentSong > 0 {
-            currentSong -= 1
-        }
-        setupToPlayTrack()
+        previousTrack()
     }
     
     @IBAction
@@ -297,10 +329,16 @@ private extension PlayingTrackViewController {
     
     @IBAction
     func sliderChanged(_ sender: UISlider) {
-        player?.stop()
-        player?.currentTime = TimeInterval(sender.value)
-        player?.prepareToPlay()
-        player?.play()
+        if sender.isTracking {
+            slider.value = sender.value
+            player?.stop()
+            timer?.invalidate()
+        } else {
+            player?.currentTime = TimeInterval(sender.value)
+            if shouldBePlayingAudio {
+                playAudio()
+            }
+        }
     }
     
     @IBAction
@@ -317,6 +355,13 @@ private extension PlayingTrackViewController {
     @IBAction
     func buttonMaximizePressed(_ sender: UIButton) {
         viewModel.isScreenMinimized = false
+    }
+    
+    @objc
+    func updateSlider() {
+        guard let currentTime = player?.currentTime else { return }
+        slider.value = Float(currentTime)
+        verifyIfWillPlayNextTrack()
     }
 }
 

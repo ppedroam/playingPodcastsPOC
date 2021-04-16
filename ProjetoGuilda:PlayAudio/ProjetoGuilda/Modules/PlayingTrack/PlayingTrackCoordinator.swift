@@ -29,13 +29,7 @@ class PlayingScreenCoordinator: PlayingScreenCoordinatorDelegate {
         
     }
     
-    deinit {
-        print("COORDINATOR DEINIT")
-        print("COORDINATOR DEINIT")
-    }
-    
     func dismiss() {
-//        viewController?.dismiss(animated: true, completion: nil)
         if let tabBarController = tabBarController as? TabBarController {
             tabBarController.removeAudioController()
         }
@@ -65,8 +59,5 @@ class PlayingScreenCoordinator: PlayingScreenCoordinatorDelegate {
                                                      height: height)
             self.tabBarController.view.layoutIfNeeded()
         }
-//        completion: { (_) in
-////            self.viewController?.view.transform = .identity
-//        }
     }
 }
