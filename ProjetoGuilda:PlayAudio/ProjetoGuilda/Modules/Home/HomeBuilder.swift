@@ -19,7 +19,6 @@ enum BuilderError: Error {
     case dataError
 }
 
-
 class HomeBuilder: BuilderProtocol {
     static func construct<T>(tabBarController: UITabBarController,
                           navigationController: UINavigationController,

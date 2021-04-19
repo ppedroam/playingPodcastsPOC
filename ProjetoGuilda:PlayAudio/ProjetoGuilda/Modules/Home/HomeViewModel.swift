@@ -12,7 +12,14 @@ protocol HomeViewModelDelegate: class {
     func success()
 }
 
-class HomeViewModel {
+protocol HomeViewModelProtocol {
+    func numberOfRows() -> Int
+    func cellContent(for index: Int) -> String
+    func callSongs()
+    func didClickPlayTrack(at index: Int)
+}
+
+class HomeViewModel: HomeViewModelProtocol {
     
     let provider: HomeProviderDelegate
     let coordinator: HomeCoordinatorDelegate
@@ -52,6 +59,6 @@ class HomeViewModel {
         guard let tracks = audioContent?.songs else {
             return
         }
-        coordinator.showTrackScreen(tracks, currentSong: index)
+        coordinator.playTrack(tracks, newTrackIndex: index)
     }
 }

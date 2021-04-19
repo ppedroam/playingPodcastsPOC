@@ -7,6 +7,9 @@
 
 import UIKit
 
+protocol HomeViewControllerProtocol {
+}
+
 class HomeViewController: UIViewController {
     
     // MARK: - Outlets
@@ -15,7 +18,7 @@ class HomeViewController: UIViewController {
     
     // MARK: - Class properties
 
-    private var viewModel: HomeViewModel
+    private var viewModel: HomeViewModelProtocol
     
     private var loading = UIActivityIndicatorView()
     

@@ -16,7 +16,7 @@ protocol CoordinatorProtocol: class {
 }
 
 protocol HomeCoordinatorDelegate: CoordinatorProtocol {
-    func showTrackScreen(_ tracks: [TrackDto], currentSong: Int)
+    func playTrack(_ tracks: [TrackDto], newTrackIndex: Int)
 }
 
 class HomeCoordinator: HomeCoordinatorDelegate {
@@ -36,25 +36,38 @@ class HomeCoordinator: HomeCoordinatorDelegate {
     
     // MARK: - Public methods
     
-    func showTrackScreen(_ tracks: [TrackDto], currentSong: Int) {
-        if playingTrackController != nil {
-            playingTrackController?.updatePlayingTrack(to: currentSong)
-            return
-        }
+    func playTrack(_ tracks: [TrackDto], newTrackIndex: Int) {
+        let isPlayingAnyTrack = playingTrackController != nil
         
-        guard let viewController = viewController else { return }
-        let data = PlayingScreenDataModel(tracks: tracks, currentSong: currentSong)
-        let playingScreenController = try? PlayingScreenBuilder.construct(tabBarController: tabBarController,
-                                                            navigationController: navigationController,
-                                                            parentViewController: viewController,
-                                                            data: data)
-        guard let playingScreenController_ = playingScreenController as? PlayingTrackViewController else {
-            return
-        }
-        playingTrackController = playingScreenController_
-        if let tabBarController = tabBarController as? TabBarController {
-            tabBarController.presentAudioController(playingScreenController_)
+        if isPlayingAnyTrack {
+            playingTrackController?.updatePlayingTrack(to: newTrackIndex)
+        } else {
+            initializePlayingTrackScreen(tracksList: tracks, newTrackIndex: newTrackIndex)
         }
     }
+}
+
+private extension HomeCoordinator {
+    func initializePlayingTrackScreen(tracksList: [TrackDto], newTrackIndex: Int) {
+        guard let viewController = viewController else { return }
+        let data = PlayingScreenDataModel(tracks: tracksList, currentSong: newTrackIndex)
+        do {
+            let playingScreenController = try PlayingScreenBuilder.construct(tabBarController: tabBarController,
+                                                                             navigationController: navigationController,
+                                                                             parentViewController: viewController,
+                                                                             data: data)
+            playingTrackController = playingScreenController as? PlayingTrackViewController
+            presentPlayingScreen()
+        } catch {
+            fatalError()
+        }
+       
+    }
     
+    func presentPlayingScreen() {
+        if let tabBarController = tabBarController as? TabBarController,
+           let controller = playingTrackController {
+            tabBarController.presentAudioController(controller)
+        }
+    }
 }

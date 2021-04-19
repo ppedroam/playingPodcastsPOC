@@ -14,7 +14,15 @@ class TabBarController: UITabBarController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = .white
+        view.backgroundColor = .white
+        configureTabBar()
+        initializeControllers()
+        configureTabBarIcons()
+    }
+}
+
+private extension TabBarController {
+    func configureTabBar() {
         self.tabBar.barTintColor = .white
         self.tabBar.unselectedItemTintColor = .systemGray
         self.tabBar.tintColor = .gray
@@ -25,12 +33,9 @@ class TabBarController: UITabBarController {
         self.tabBar.layer.shadowRadius = 2
         self.tabBar.layer.shadowColor = UIColor.gray.cgColor
         self.tabBar.layer.shadowOpacity = 1
-        
-        self.configureTabBar()
     }
     
-    private func configureTabBar() {
-        
+    func initializeControllers() {
         let homeController = try? HomeBuilder.construct(tabBarController: self,
                                                         navigationController: NavigationController(),
                                                         parentViewController: self,
@@ -42,34 +47,42 @@ class TabBarController: UITabBarController {
         
         self.viewControllers = controllers.map {
             if let navigationController = $0.navigationController {
-//                navigationController.viewControllers = [$0]
                 return navigationController
             }
             return $0
         }
-        
-        controllers.forEach({ (vc) in
-            
-            if vc.isKind(of: HomeViewController.self) {
-                let imageSelected = UIImage(named: "home-fill")?.icon(size: 30)
-                let image = UIImage(named: "home")?.icon(size: 30)
-                let item = UITabBarItem(title: nil, image: image, selectedImage: imageSelected)
-                vc.tabBarItem = item
-                vc.tabBarItem.imageInsets = UIEdgeInsets.init(top: 5,left: 0,bottom: -5,right: 0)
+    }
+    
+    func configureTabBarIcons() {
+        viewControllers?.forEach({ (viewController) in
+            if viewController.isKind(of: HomeViewController.self) {
+                configureHomeTabBarIcon(viewController)
             }
-            
-            if let nav = vc as? NavigationController, let secondVC = nav.viewControllers.first as? SecondViewController {
-                let imageSelected = UIImage(named: "music-fill")?.icon(size: 30)
-                let image = UIImage(named: "music")?.icon(size: 30)
-                let item = UITabBarItem(title: nil, image: image, selectedImage: imageSelected)
-                secondVC.tabBarItem = item
-                secondVC.tabBarItem.imageInsets = UIEdgeInsets.init(top: 5,left: 0,bottom: -5,right: 0)
+            if let nav = viewController as? NavigationController,
+               let secondVC = nav.viewControllers.first as? SecondViewController {
+                configureSecondController(secondVC)
             }
         })
     }
     
-    // MARK: - Public methods
+    func configureHomeTabBarIcon(_ homeController: UIViewController) {
+        let imageSelected = UIImage(named: "home-fill")?.icon(size: 30)
+        let image = UIImage(named: "home")?.icon(size: 30)
+        let item = UITabBarItem(title: nil, image: image, selectedImage: imageSelected)
+        homeController.tabBarItem = item
+        homeController.tabBarItem.imageInsets = UIEdgeInsets.init(top: 5,left: 0,bottom: -5,right: 0)
+    }
     
+    func configureSecondController(_ secondController: UIViewController) {
+        let imageSelected = UIImage(named: "music-fill")?.icon(size: 30)
+        let image = UIImage(named: "music")?.icon(size: 30)
+        let item = UITabBarItem(title: nil, image: image, selectedImage: imageSelected)
+        secondController.tabBarItem = item
+        secondController.tabBarItem.imageInsets = UIEdgeInsets.init(top: 5,left: 0,bottom: -5,right: 0)
+    }
+}
+    
+extension TabBarController {
     
     func presentAudioController(_ viewController: UIViewController) {
         audioViewController = viewController
