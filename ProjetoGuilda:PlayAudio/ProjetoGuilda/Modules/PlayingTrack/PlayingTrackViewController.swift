@@ -378,5 +378,4 @@ extension PlayingTrackViewController: PlayingScreenViewModelDelegate {
         audioView.isHidden = !isMinimized
         fullScreenView.isHidden = isMinimized
     }
-
 }

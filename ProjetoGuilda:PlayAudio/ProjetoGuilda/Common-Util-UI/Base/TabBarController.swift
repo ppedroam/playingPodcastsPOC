@@ -95,8 +95,8 @@ extension TabBarController {
                                            height: height)
         viewController.view.layoutSubviews()
         self.addChild(viewController)
-        self.view.addSubview(viewController.view)
         viewController.didMove(toParent: self)
+        self.view.addSubview(viewController.view)
         
         UIView.animate(withDuration: 0.4) {
             viewController.view.frame = CGRect(x: frame.minX,
